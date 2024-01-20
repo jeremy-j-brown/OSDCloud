@@ -68,7 +68,7 @@ Out-File -FilePath $ScriptPathSendKeys -InputObject $SendKeysScript -Encoding as
 
 # Download ServiceUI.exe
 Write-Host -ForegroundColor Gray "Download ServiceUI.exe from GitHub Repo"
-Invoke-WebRequest https://github.com/jjblab/OSD/Tools/raw/main/ServiceUI64.exe -OutFile "C:\OSDCloud\ServiceUI.exe"
+Invoke-WebRequest https://github.com/jjblab/OSDCloud/raw/main/Tools/ServiceUI64.exe -OutFile "C:\OSDCloud\ServiceUI.exe"
 
 #Create Scheduled Task for SendKeys with 15 seconds delay
 $TaskName = "Scheduled Task for SendKeys"
