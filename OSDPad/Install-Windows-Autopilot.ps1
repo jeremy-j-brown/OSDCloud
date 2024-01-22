@@ -1,3 +1,4 @@
+Write-Host  -ForegroundColor Cyan 'Windows 11 23H2 Enterprise Autopilot'
 #================================================
 #   [PreOS] Update Module
 #================================================
@@ -15,16 +16,16 @@ Import-Module OSD -Force
 #=======================================================================
 #   [OS] Params and Start-OSDCloud
 #=======================================================================
-$Params = @{
+<#$Params = @{
     OSVersion = "Windows 11"
     OSBuild = "23H2"
     OSEdition = "Enterprise"
-    OSLanguage = "en-us"
+    OSLanguage = "en-US"
     OSLicense = "Volume"
     ZTI = $true
-    Firmware = $false
 }
-Start-OSDCloud @Params
+Start-OSDCloud @Params#>
+Start-OSDCloudGUI
 
 #================================================
 #  [PostOS] OOBEDeploy Configuration
@@ -32,40 +33,37 @@ Start-OSDCloud @Params
 Write-Host -ForegroundColor Green "Create C:\ProgramData\OSDeploy\OSDeploy.OOBEDeploy.json"
 $OOBEDeployJson = @'
 {
-    "AddNetFX3":  {
-                      "IsPresent":  true
-                  },
     "Autopilot":  {
                       "IsPresent":  false
                   },
+    "AddNetFX3":  {
+                      "IsPresent":  true
+                    },                     
     "RemoveAppx":  [
-                    "MicrosoftTeams",
-                    "Microsoft.BingWeather",
-                    "Microsoft.BingNews",
-                    "Microsoft.GamingApp",
-                    "Microsoft.GetHelp",
-                    "Microsoft.Getstarted",
-                    "Microsoft.Messaging",
-                    "Microsoft.MicrosoftOfficeHub",
-                    "Microsoft.MicrosoftSolitaireCollection",
-                    "Microsoft.MicrosoftStickyNotes",
-                    "Microsoft.MSPaint",
-                    "Microsoft.People",
-                    "Microsoft.PowerAutomateDesktop",
-                    "Microsoft.StorePurchaseApp",
-                    "Microsoft.Todos",
-                    "microsoft.windowscommunicationsapps",
-                    "Microsoft.WindowsFeedbackHub",
-                    "Microsoft.WindowsMaps",
-                    "Microsoft.WindowsSoundRecorder",
-                    "Microsoft.Xbox.TCUI",
-                    "Microsoft.XboxGameOverlay",
-                    "Microsoft.XboxGamingOverlay",
-                    "Microsoft.XboxIdentityProvider",
-                    "Microsoft.XboxSpeechToTextOverlay",
-                    "Microsoft.YourPhone",
-                    "Microsoft.ZuneMusic",
-                    "Microsoft.ZuneVideo"
+                       "Microsoft.549981C3F5F10",
+                        "Microsoft.BingWeather",
+                        "Microsoft.GetHelp",
+                        "Microsoft.Getstarted",
+                        "Microsoft.Microsoft3DViewer",
+                        "Microsoft.MicrosoftOfficeHub",
+                        "Microsoft.MicrosoftSolitaireCollection",
+                        "Microsoft.MixedReality.Portal",
+                        "Microsoft.People",
+                        "Microsoft.SkypeApp",
+                        "Microsoft.Wallet",
+                        "Microsoft.WindowsCamera",
+                        "microsoft.windowscommunicationsapps",
+                        "Microsoft.WindowsFeedbackHub",
+                        "Microsoft.WindowsMaps",
+                        "Microsoft.Xbox.TCUI",
+                        "Microsoft.XboxApp",
+                        "Microsoft.XboxGameOverlay",
+                        "Microsoft.XboxGamingOverlay",
+                        "Microsoft.XboxIdentityProvider",
+                        "Microsoft.XboxSpeechToTextOverlay",
+                        "Microsoft.YourPhone",
+                        "Microsoft.ZuneMusic",
+                        "Microsoft.ZuneVideo"
                    ],
     "UpdateDrivers":  {
                           "IsPresent":  true
@@ -83,14 +81,13 @@ $OOBEDeployJson | Out-File -FilePath "C:\ProgramData\OSDeploy\OSDeploy.OOBEDeplo
 #================================================
 #  [PostOS] AutopilotOOBE Configuration Staging
 #================================================
-
 Write-Host -ForegroundColor Green "Create C:\ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json"
-$AutopilotOOBEJson = @"
+$AutopilotOOBEJson = @'
 {
-    "Assign":  {
-                   "IsPresent":  true
-               },
-    "GroupTag":  "PHL-IA",
+	"Assign": {
+		"IsPresent": true
+	},
+	"GroupTag":  "PHL-IA",
     "GroupTagOptions":  [
                             "BOS-A",
                             "BOS-IA",
@@ -101,23 +98,24 @@ $AutopilotOOBEJson = @"
                             "PHL-IS",
                             "PHL-S"
                         ],
-    "Hidden":  [
-                   "AddToGroup",
-                   "AssignedUser",
-                   "PostAction",
-                   "Assign"
-               ],
-    "PostAction":  "Quit",
-    "Run":  "NetworkingWireless",
-    "Docs":  "https://google.com/",
-    "Title":  "ECOG-ACRIN Autopilot Registration"
+	"Hidden": [
+		"AssignedComputerName",
+		"AssignedUser",
+		"PostAction",
+		"Assign",
+		"AddToGroup"
+	],
+	"PostAction": "Quit",
+	"Run": "NetworkingWireless",
+	"Docs": "https://google.com/",
+	"Title": "ECOG-ACRIN Autopilot Registration"
 }
-"@
-
+'@
 If (!(Test-Path "C:\ProgramData\OSDeploy")) {
     New-Item "C:\ProgramData\OSDeploy" -ItemType Directory -Force | Out-Null
 }
 $AutopilotOOBEJson | Out-File -FilePath "C:\ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json" -Encoding ascii -Force
+
 
 #================================================
 #  [PostOS] AutopilotOOBE CMD Command Line
@@ -128,11 +126,8 @@ PowerShell -NoL -Com Set-ExecutionPolicy RemoteSigned -Force
 Set Path = %PATH%;C:\Program Files\WindowsPowerShell\Scripts
 Start /Wait PowerShell -NoL -C Install-Module AutopilotOOBE -Force -Verbose
 Start /Wait PowerShell -NoL -C Install-Module OSD -Force -Verbose
-Start /Wait PowerShell -NoL -C Invoke-WebPSScript https://raw.githubusercontent.com/jjblab/OSDCloud/main/Helpers/Set-KeyboardLanguage.ps1
-Start /Wait PowerShell -NoL -C Invoke-WebPSScript https://raw.githubusercontent.com/jjblab/OSDCloud/main/Helpers/Check-AutopilotRequirements.ps1
-Start /Wait PowerShell -NoL -C Invoke-WebPSScript https://raw.githubusercontent.com/jjblab/OSDCloud/main/Helpers/Start-AutopilotOOBE.ps1
-Start /Wait PowerShell -NoL -C Invoke-WebPSScript https://raw.githubusercontent.com/jjblab/OSDCloud/main/Helpers/Check-TPM.ps1
-Start /Wait PowerShell -NoL -C Invoke-WebPSScript https://raw.githubusercontent.com/jjblab/OSDCloud/main/Helpers/Clean-OSD.ps1
+Start /Wait PowerShell -NoL -C Start-AutopilotOOBE
+Start /Wait PowerShell -NoL -C Start-OOBEDeploy
 Start /Wait PowerShell -NoL -C Restart-Computer -Force
 '@
 $OOBECMD | Out-File -FilePath 'C:\Windows\System32\OOBE.cmd' -Encoding ascii -Force
@@ -142,14 +137,14 @@ $OOBECMD | Out-File -FilePath 'C:\Windows\System32\OOBE.cmd' -Encoding ascii -Fo
 #================================================
 Write-Host -ForegroundColor Green "Create C:\Windows\Setup\Scripts\SetupComplete.cmd"
 $SetupCompleteCMD = @'
-powershell.exe -Command Set-ExecutionPolicy RemoteSigned -Force
-powershell.exe -Command "& {IEX (IRM https://raw.githubusercontent.com/jjblab/OSDCloud/main/Helpers/Start-OOBETasks.ps1)}"
+RD C:\OSDCloud\OS /S /Q
+RD C:\Drivers /S /Q
 '@
 $SetupCompleteCMD | Out-File -FilePath 'C:\Windows\Setup\Scripts\SetupComplete.cmd' -Encoding ascii -Force
 
 #=======================================================================
 #   Restart-Computer
 #=======================================================================
-Write-Host  -ForegroundColor Green "Restarting in 20 seconds!"
+Write-Host "Restarting in 20 seconds!" -ForegroundColor Green
 Start-Sleep -Seconds 20
 wpeutil reboot
