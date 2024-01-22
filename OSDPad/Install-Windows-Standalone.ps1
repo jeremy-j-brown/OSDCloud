@@ -1,4 +1,4 @@
-Write-Host  -ForegroundColor Cyan 'Windows Autopilot'
+Write-Host  -ForegroundColor Cyan 'Windows Standalone'
 #================================================
 #   [PreOS] Update Module
 #================================================
@@ -16,16 +16,8 @@ Import-Module OSD -Force
 #=======================================================================
 #   [OS] Start-OSDCloudGUI
 #=======================================================================
-<#$Params = @{
-    OSVersion = "Windows 11"
-    OSBuild = "23H2"
-    OSEdition = "Enterprise"
-    OSLanguage = "en-US"
-    OSLicense = "Volume"
-    ZTI = $true
-}
-Start-OSDCloud @Params#>
-Start-OSDCloudGUI -BrandName "ECOG-ACRIN Windows Standalone DEployment"
+
+Start-OSDCloudGUI -BrandName "ECOG-ACRIN Windows Standalone Deployment"
 
 #================================================
 #  [PostOS] OOBEDeploy Configuration
@@ -79,54 +71,13 @@ If (!(Test-Path "C:\ProgramData\OSDeploy")) {
 $OOBEDeployJson | Out-File -FilePath "C:\ProgramData\OSDeploy\OSDeploy.OOBEDeploy.json" -Encoding ascii -Force
 
 #================================================
-#  [PostOS] AutopilotOOBE Configuration Staging
-#================================================
-Write-Host -ForegroundColor Green "Create C:\ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json"
-$AutopilotOOBEJson = @'
-{
-	"Assign": {
-		"IsPresent": true
-	},
-	"GroupTag":  "PHL-IA",
-    "GroupTagOptions":  [
-                            "BOS-A",
-                            "BOS-IA",
-                            "BOS-IS",
-                            "BOS-S",
-                            "PHL-A",
-                            "PHL-IA",
-                            "PHL-IS",
-                            "PHL-S"
-                        ],
-	"Hidden": [
-		"AssignedComputerName",
-		"AssignedUser",
-		"PostAction",
-		"Assign",
-		"AddToGroup"
-	],
-	"PostAction": "Quit",
-	"Run": "NetworkingWireless",
-	"Docs": "https://google.com/",
-	"Title": "ECOG-ACRIN Autopilot Registration"
-}
-'@
-If (!(Test-Path "C:\ProgramData\OSDeploy")) {
-    New-Item "C:\ProgramData\OSDeploy" -ItemType Directory -Force | Out-Null
-}
-$AutopilotOOBEJson | Out-File -FilePath "C:\ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json" -Encoding ascii -Force
-
-
-#================================================
-#  [PostOS] AutopilotOOBE CMD Command Line
+#  [PostOS] OOBE CMD Command Line
 #================================================
 Write-Host -ForegroundColor Green "Create C:\Windows\System32\OOBE.cmd"
 $OOBECMD = @'
 PowerShell -NoL -Com Set-ExecutionPolicy RemoteSigned -Force
 Set Path = %PATH%;C:\Program Files\WindowsPowerShell\Scripts
-Start /Wait PowerShell -NoL -C Install-Module AutopilotOOBE -Force -Verbose
 Start /Wait PowerShell -NoL -C Install-Module OSD -Force -Verbose
-Start /Wait PowerShell -NoL -C Start-AutopilotOOBE
 Start /Wait PowerShell -NoL -C Start-OOBEDeploy
 Start /Wait PowerShell -NoL -C Restart-Computer -Force
 '@
