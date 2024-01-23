@@ -16,7 +16,7 @@ Import-Module OSD -Force
 #=======================================================================
 #   [OS] Start-OSDCloudGUI
 #=======================================================================
-Start-OSDCloudGUI -BrandName "ECOG-ACRIN Windows Deployment"
+Start-OSDCloudGUI -BrandName "Intune Windows Deployment"
 
 #================================================
 #  [PostOS] OOBEDeploy Configuration
@@ -99,7 +99,7 @@ $AutopilotOOBEJson = @'
 	"PostAction": "Quit",
 	"Run": "NetworkingWireless",
 	"Docs": "https://google.com/",
-	"Title": "ECOG-ACRIN Autopilot Registration"
+	"Title": "Intune Autopilot Registration"
 }
 '@
 If (!(Test-Path "C:\ProgramData\OSDeploy")) {
@@ -107,17 +107,27 @@ If (!(Test-Path "C:\ProgramData\OSDeploy")) {
 }
 $AutopilotOOBEJson | Out-File -FilePath "C:\ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json" -Encoding ascii -Force
 
+#================================================
+#  [PostOS] Autopilot CMD Command Line
+#================================================
+Write-Host -ForegroundColor Green "Create C:\Windows\System32\OOBE.cmd"
+$APCMD = @'
+PowerShell -NoL -Com Set-ExecutionPolicy RemoteSigned -Force
+Set Path = %PATH%;C:\Program Files\WindowsPowerShell\Scripts
+Start /Wait PowerShell -NoL -C Install-Module AutopilotOOBE -Force -Verbose
+Start /Wait PowerShell -NoL -C Start-AutopilotOOBE
+Start /Wait PowerShell -NoL -C Restart-Computer -Force
+'@
+$APCMD | Out-File -FilePath 'C:\Windows\System32\AP.cmd' -Encoding ascii -Force
 
 #================================================
-#  [PostOS] AutopilotOOBE CMD Command Line
+#  [PostOS] OOBE CMD Command Line
 #================================================
 Write-Host -ForegroundColor Green "Create C:\Windows\System32\OOBE.cmd"
 $OOBECMD = @'
 PowerShell -NoL -Com Set-ExecutionPolicy RemoteSigned -Force
 Set Path = %PATH%;C:\Program Files\WindowsPowerShell\Scripts
-Start /Wait PowerShell -NoL -C Install-Module AutopilotOOBE -Force -Verbose
 Start /Wait PowerShell -NoL -C Install-Module OSD -Force -Verbose
-Start /Wait PowerShell -NoL -C Start-AutopilotOOBE
 Start /Wait PowerShell -NoL -C Start-OOBEDeploy
 Start /Wait PowerShell -NoL -C Restart-Computer -Force
 '@
