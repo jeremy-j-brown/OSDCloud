@@ -14,9 +14,18 @@ Write-Host  -ForegroundColor Green "Importing OSD PowerShell Module"
 Import-Module OSD -Force   
 
 #=======================================================================
-#   [OS] Start-OSDCloudGUI
+#   [OS] Params and Start-OSDCloud
 #=======================================================================
-Start-OSDCloudGUI -BrandName "Intune Windows Deployment"
+$Params = @{
+    OSVersion = "Windows 10"
+    OSBuild = "22H2"
+    OSEdition = "Enterprise"
+    OSLanguage = "en-us"
+    OSLicense = "Volume"
+    ZTI = $true
+    Firmware = $false
+}
+Start-OSDCloud @Params
 
 #================================================
 #  [PostOS] OOBEDeploy Configuration
@@ -108,27 +117,20 @@ If (!(Test-Path "C:\ProgramData\OSDeploy")) {
 $AutopilotOOBEJson | Out-File -FilePath "C:\ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json" -Encoding ascii -Force
 
 #================================================
-#  [PostOS] Autopilot CMD Command Line
-#================================================
-Write-Host -ForegroundColor Green "Create C:\Windows\System32\OOBE.cmd"
-$APCMD = @'
-PowerShell -NoL -Com Set-ExecutionPolicy RemoteSigned -Force
-Set Path = %PATH%;C:\Program Files\WindowsPowerShell\Scripts
-Start /Wait PowerShell -NoL -C Install-Module AutopilotOOBE -Force -Verbose
-Start /Wait PowerShell -NoL -C Start-AutopilotOOBE
-Start /Wait PowerShell -NoL -C Restart-Computer -Force
-'@
-$APCMD | Out-File -FilePath 'C:\Windows\System32\AP.cmd' -Encoding ascii -Force
-
-#================================================
-#  [PostOS] OOBE CMD Command Line
+#  [PostOS] AutopilotOOBE CMD Command Line
 #================================================
 Write-Host -ForegroundColor Green "Create C:\Windows\System32\OOBE.cmd"
 $OOBECMD = @'
 PowerShell -NoL -Com Set-ExecutionPolicy RemoteSigned -Force
 Set Path = %PATH%;C:\Program Files\WindowsPowerShell\Scripts
+Start /Wait PowerShell -NoL -C Install-Module AutopilotOOBE -Force -Verbose
 Start /Wait PowerShell -NoL -C Install-Module OSD -Force -Verbose
+Start /Wait PowerShell -NoL -C Invoke-WebPSScript https://raw.githubusercontent.com/jjblab/OSDCloud/OOBE/main/Set-KeyboardLanguage.ps1
+Start /Wait PowerShell -NoL -C Invoke-WebPSScript https://raw.githubusercontent.com/jjblab/OSDCloud/OOBE/main/Check-AutoPilotPrerequisites.ps1
+Start /Wait PowerShell -NoL -C Start-AutopilotOOBE
 Start /Wait PowerShell -NoL -C Start-OOBEDeploy
+Start /Wait PowerShell -NoL -C Invoke-WebPSScript https://raw.githubusercontent.com/jjblab/OSDCloud/OOBE/main/Check-TPM.ps1
+Start /Wait PowerShell -NoL -C Invoke-WebPSScript https://raw.githubusercontent.com/jjblab/OSDCloud/OOBE/main/Cleanup.ps1
 Start /Wait PowerShell -NoL -C Restart-Computer -Force
 '@
 $OOBECMD | Out-File -FilePath 'C:\Windows\System32\OOBE.cmd' -Encoding ascii -Force
@@ -138,14 +140,14 @@ $OOBECMD | Out-File -FilePath 'C:\Windows\System32\OOBE.cmd' -Encoding ascii -Fo
 #================================================
 Write-Host -ForegroundColor Green "Create C:\Windows\Setup\Scripts\SetupComplete.cmd"
 $SetupCompleteCMD = @'
-RD C:\OSDCloud\OS /S /Q
-RD C:\Drivers /S /Q
+powershell.exe -Command Set-ExecutionPolicy RemoteSigned -Force
+powershell.exe -Command "& {IEX (IRM https://raw.githubusercontent.com/jjblab/OSDCloud/OOBE/main/Cleanup.ps1)}"
 '@
 $SetupCompleteCMD | Out-File -FilePath 'C:\Windows\Setup\Scripts\SetupComplete.cmd' -Encoding ascii -Force
 
 #=======================================================================
 #   Restart-Computer
 #=======================================================================
-Write-Host "Restarting in 20 seconds!" -ForegroundColor Green
+Write-Host  -ForegroundColor Green "Restarting in 20 seconds!"
 Start-Sleep -Seconds 20
 wpeutil reboot
