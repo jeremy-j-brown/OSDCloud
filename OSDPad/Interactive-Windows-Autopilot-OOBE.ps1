@@ -16,7 +16,7 @@ Import-Module OSD -Force
 #=======================================================================
 #   [OS] Start-OSDCloudGUI
 #=======================================================================
-Start-OSDCloudGUIDev
+Start-OSDCloudGUI
 
 #================================================
 #  [PostOS] OOBEDeploy Configuration
