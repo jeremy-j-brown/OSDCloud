@@ -14,18 +14,9 @@ Write-Host  -ForegroundColor Green "Importing OSD PowerShell Module"
 Import-Module OSD -Force   
 
 #=======================================================================
-#   [OS] Params and Start-OSDCloud
+#   [OS] Start-OSDCloudGUI
 #=======================================================================
-$Params = @{
-    OSVersion = "Windows 10"
-    OSBuild = "22H2"
-    OSEdition = "Enterprise"
-    OSLanguage = "en-us"
-    OSLicense = "Volume"
-    ZTI = $true
-    Firmware = $false
-}
-Start-OSDCloud @Params
+Start-OSDCloudGUIDev
 
 #================================================
 #  [PostOS] OOBEDeploy Configuration
