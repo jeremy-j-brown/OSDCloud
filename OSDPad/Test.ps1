@@ -14,7 +14,7 @@ Import-Module OSD -Force
 
 #=======================================================================
 #   [OS] Params and Start-OSDCloud
-#=======================================================================
+<#=======================================================================
 $Params = @{
     OSVersion = "Windows 11"
     OSBuild = "23H2"
@@ -24,7 +24,8 @@ $Params = @{
     ZTI = $true
     Firmware = $false
 }
-Start-OSDCloud @Params
+Start-OSDCloud @Params#>
+Start-OSDCloudGUI
 
 #================================================
 #  [PostOS] OOBEDeploy Configuration
