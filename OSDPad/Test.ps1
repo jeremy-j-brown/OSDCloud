@@ -14,18 +14,18 @@ Import-Module OSD -Force
 
 #=======================================================================
 #   [OS] Params and Start-OSDCloud
-<#=======================================================================
+#=======================================================================
 $Params = @{
     OSVersion = "Windows 11"
-    OSBuild = "23H2"
+    OSName = "D:\OSDCloud\OS\Windows11.wim"
     OSEdition = "Enterprise"
     OSLanguage = "en-us"
     OSLicense = "Volume"
     ZTI = $true
     Firmware = $false
 }
-Start-OSDCloud @Params#>
-Start-OSDCloudGUI
+Start-OSDCloud @Params
+
 
 #================================================
 #  [PostOS] OOBEDeploy Configuration
