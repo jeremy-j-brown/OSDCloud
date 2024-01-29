@@ -93,27 +93,35 @@ Write-Host -ForegroundColor Red $AssignedComputerName
 Write-Host ""
 
 Write-Host -ForegroundColor Green "Create C:\ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json"
-$AutopilotOOBEJson = @"
+$AutopilotOOBEJson = @'
 {
-    "AssignedComputerName" : "$AssignedComputerName",
-    "AddToGroup":  "AADGroupX",
-    "Assign":  {
-                   "IsPresent":  true
-               },
-    "GroupTag":  "GroupTagXXX",
-    "Hidden":  [
-                   "AddToGroup",
-                   "AssignedUser",
-                   "PostAction",
-                   "GroupTag",
-                   "Assign"
-               ],
-    "PostAction":  "Quit",
-    "Run":  "NetworkingWireless",
-    "Docs":  "https://google.com/",
-    "Title":  "Autopilot Manual Register"
+	"Assign": {
+		"IsPresent": true
+	},
+	"GroupTag":  "PHL-IA",
+    "GroupTagOptions":  [
+                            "BOS-A",
+                            "BOS-IA",
+                            "BOS-IS",
+                            "BOS-S",
+                            "PHL-A",
+                            "PHL-IA",
+                            "PHL-IS",
+                            "PHL-S"
+                        ],
+	"Hidden": [
+		"AssignedComputerName",
+		"AssignedUser",
+		"PostAction",
+		"Assign",
+		"AddToGroup"
+	],
+	"PostAction": "Quit",
+	"Run": "NetworkingWireless",
+	"Docs": "https://google.com/",
+	"Title": "Intune Autopilot Registration"
 }
-"@
+'@
 
 If (!(Test-Path "C:\ProgramData\OSDeploy")) {
     New-Item "C:\ProgramData\OSDeploy" -ItemType Directory -Force | Out-Null
