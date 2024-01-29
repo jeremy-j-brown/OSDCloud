@@ -39,10 +39,10 @@ Write-Host -ForegroundColor DarkGray "Installing OSD PS Module"
 Start-Process PowerShell -ArgumentList "-NoL -C Install-Module OSD -Force -Verbose" -Wait
 
 Write-Host -ForegroundColor DarkGray "Executing Keyboard Language Skript"
-Start-Process PowerShell -ArgumentList "-NoL -C Invoke-WebPSScript https://raw.githubusercontent.com/jjblab/OSDCloud/main/OOBE/Set-KeyboardLanguage.ps1" -Wait
+Start-Process PowerShell -ArgumentList "-NoL -C Invoke-WebPSScript https://raw.githubusercontent.com/jjblab/OSDPad/main/OOBE/Set-KeyboardLanguage.ps1" -Wait
 
 Write-Host -ForegroundColor DarkGray "Executing Autopilot Check Script"
-Start-Process PowerShell -ArgumentList "-NoL -C Invoke-WebPSScript https://raw.githubusercontent.com/jjblab/OSDCloud/main/OOBE/Check-AutoPilotPrerequisites.ps1" -Wait
+Start-Process PowerShell -ArgumentList "-NoL -C Invoke-WebPSScript https://raw.githubusercontent.com/jjblab/OSDPad/main/OOBE/Check-AutoPilotPrerequisites.ps1" -Wait
 
 Write-Host -ForegroundColor DarkGray "Executing AutopilotOOBE Module"
 Start-Process PowerShell -ArgumentList "-NoL -C Start-AutopilotOOBE" -Wait
@@ -51,7 +51,7 @@ Write-Host -ForegroundColor DarkGray "Executing OOBEDeploy Script fomr OSDCloud 
 Start-Process PowerShell -ArgumentList "-NoL -C Start-OOBEDeploy" -Wait
 
 Write-Host -ForegroundColor DarkGray "Executing Cleanup Script"
-Start-Process PowerShell -ArgumentList "-NoL -C Invoke-WebPSScript https://raw.githubusercontent.com/jjblab/OSDCloud/main/OOBE/Cleanup.ps1" -Wait
+Start-Process PowerShell -ArgumentList "-NoL -C Invoke-WebPSScript https://raw.githubusercontent.com/jjblab/OSDPad/main/OOBE/Cleanup.ps1" -Wait
 
 # Cleanup scheduled Tasks
 Write-Host -ForegroundColor DarkGray "Unregistering Scheduled Tasks"
