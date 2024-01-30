@@ -13,10 +13,10 @@ Write-Host  -ForegroundColor Green "Importing OSD PowerShell Module"
 Import-Module OSD -Force  
 
 Write-Host -ForegroundColor Green "Installing AutopilotOOBE PowerShell Module"
-Install-Module AutopilotOOBE -Force
+Install-Module AutopilotOOBE -Force -Verbose
 
 Write-Host -ForegroundColor Green "Importing AutopilotOOBE PowerShell Module"
-Install-Module AutopilotOOBE -Force
+Install-Module AutopilotOOBE -Force -Verbose
 
 #================================================
 #   [PreOS] AutopilotOOBE Configuration
