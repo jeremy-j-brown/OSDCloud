@@ -53,8 +53,8 @@ $AutopilotOOBEJson = @'
 }
 '@
 
-If (!(Test-Path "C:\ProgramData\OSDeploy")) {
-    New-Item "C:\ProgramData\OSDeploy" -ItemType Directory -Force | Out-Null
+If (!(Test-Path "X:\ProgramData\OSDeploy")) {
+    New-Item "X:\ProgramData\OSDeploy" -ItemType Directory -Force | Out-Null
 }
 $AutopilotOOBEJson | Out-File -FilePath "X:\ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json" -Encoding ascii -Force
 
