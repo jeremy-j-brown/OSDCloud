@@ -1,44 +1,101 @@
-Write-Host  -ForegroundColor Cyan 'Windows Installation'
 #================================================
-#   [PreOS] Update Module
+#   OSDCloud Build Sequence
+#   WARNING: Will wipe hard drive without prompt!!
+#   Windows 11 23H2 Enterprise en-us Volume
+#   Deploys OS
+#   Updates OS
+#   Removes AppX Packages from OS
+#   Creates post deployment scripts for Autopilot
 #================================================
+#   PreOS
+#   Set VM Display Resolution
 if ((Get-MyComputerModel) -match 'Virtual') {
-    Write-Host  -ForegroundColor Green "Setting Display Resolution to 1600x"
+    Write-Host  -ForegroundColor Cyan "Setting Display Resolution to 1600x"
     Set-DisRes 1600
 }
+#================================================
+#   PreOS
+# Set TLS to 1.2
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 
+#   Install and Import OSD Module
+Install-Module OSD -Force -AllowClobber -SkipPublisherCheck
+Import-Module OSD -Force 
 
-Write-Host -ForegroundColor Green "Updating OSD PowerShell Module"
-Install-Module OSD -Force
-
-Write-Host  -ForegroundColor Green "Importing OSD PowerShell Module"
-Import-Module OSD -Force   
-
-#=======================================================================
-#   [OS] Params and Start-OSDCloud
-#=======================================================================
+#================================================
+#   [OS] Start-OSDCloud with Params
+#================================================
 $Params = @{
-    OSVersion = "Windows 11"
-    OSBuild = "23H2"
+    OSName = "Windows 11 23H2 x64"
     OSEdition = "Enterprise"
     OSLanguage = "en-us"
     OSLicense = "Volume"
-    ZTI = $true
-    Firmware = $false
+    SkipAutopilot = $true
+    ZTI = $True
 }
 Start-OSDCloud @Params
-
 #================================================
-#  [PostOS] OOBEDeploy Configuration
+#   WinPE PostOS Sample
+#   AutopilotOOBE Offline Staging
+#================================================
+Write-Host -ForegroundColor Green "Create C:\ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json"
+$AutopilotOOBEJson = @'
+{
+	"Assign": {
+		"IsPresent": true
+	},
+	"GroupTag":  "PHL-IA",
+    "GroupTagOptions":  [
+                            "BOS-A",
+                            "BOS-IA",
+                            "BOS-IS",
+                            "BOS-S",
+                            "PHL-A",
+                            "PHL-IA",
+                            "PHL-IS",
+                            "PHL-S"
+                        ],
+	"Hidden": [
+		"AssignedComputerName",
+		"AssignedUser",
+		"PostAction",
+		"Assign",
+		"AddToGroup"
+	],
+	"PostAction": "Quit",
+	"Run": "NetworkingWireless",
+	"Docs": "https://google.com/",
+	"Title": "Intune Autopilot Registration"
+}
+'@
+If (!(Test-Path "C:\ProgramData\OSDeploy")) {
+    New-Item "C:\ProgramData\OSDeploy" -ItemType Directory -Force | Out-Null
+}
+$AutopilotOOBEJson | Out-File -FilePath "C:\ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json" -Encoding ascii -Force
+
+
+Install-Module AutopilotOOBE -Force -AllowClobber -SkipPublisherCheck
+Import-Module AutopilotOOBE -Force
+
+$Params = @{
+    Title = 'Autopilot Registration'
+    GroupTagOptions = 'BOS-S','BOS-A','BOS-IA','PHL-S','PHL-A','PHL-IA'
+    Hidden = 'AddToGroup','AssignedComputerName','AssignedUser','PostAction'
+    Assign = $true
+    PostAction = 'Restart'
+    Run = 'PowerShell'
+    Disabled = 'Assign'
+}
+AutopilotOOBE @Params
+#================================================
+#   WinPE PostOS Sample
+#   OOBEDeploy Offline Staging
 #================================================
 Write-Host -ForegroundColor Green "Create C:\ProgramData\OSDeploy\OSDeploy.OOBEDeploy.json"
 $OOBEDeployJson = @'
 {
     "Autopilot":  {
-                      "IsPresent":  false
-                  },
-    "AddNetFX3":  {
                       "IsPresent":  true
-                    },                     
+                  },      
     "RemoveAppx":  [
                        "Microsoft.549981C3F5F10",
                         "Microsoft.BingWeather",
@@ -78,76 +135,84 @@ If (!(Test-Path "C:\ProgramData\OSDeploy")) {
 }
 $OOBEDeployJson | Out-File -FilePath "C:\ProgramData\OSDeploy\OSDeploy.OOBEDeploy.json" -Encoding ascii -Force
 
-#================================================
-#  [PostOS] AutopilotOOBE Configuration Staging
-#================================================
-Write-Host -ForegroundColor Green "Create C:\ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json"
-$AutopilotOOBEJson = @'
-{
-	"Assign": {
-		"IsPresent": true
-	},
-	"GroupTag":  "PHL-IA",
-    "GroupTagOptions":  [
-                            "BOS-A",
-                            "BOS-IA",
-                            "BOS-IS",
-                            "BOS-S",
-                            "PHL-A",
-                            "PHL-IA",
-                            "PHL-IS",
-                            "PHL-S"
-                        ],
-	"Hidden": [
-		"AssignedComputerName",
-		"AssignedUser",
-		"PostAction",
-		"Assign",
-		"AddToGroup"
-	],
-	"PostAction": "Quit",
-	"Run": "NetworkingWireless",
-	"Docs": "https://google.com/",
-	"Title": "Intune Autopilot Registration"
+$Params = @{
+    Autopilot = $true
+    RemoveAppx = "CommunicationsApps","OfficeHub","People","Skype","Solitaire","Xbox","ZuneMusic","ZuneVideo","GetHelp","BingWeather","GamingApp","WindowsMaps","BingNews","MicrosoftTeams"
+    UpdateDrivers = $true
+    UpdateWindows = $true
 }
-'@
-If (!(Test-Path "C:\ProgramData\OSDeploy")) {
-    New-Item "C:\ProgramData\OSDeploy" -ItemType Directory -Force | Out-Null
-}
-$AutopilotOOBEJson | Out-File -FilePath "C:\ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json" -Encoding ascii -Force
+Start-OOBEDeploy @Params
+#================================================
+#   WinPE PostOS
+#   Set OOBEDeploy CMD.ps1
+#================================================
+$SetCommand = @'
+@echo off
 
-#================================================
-#  [PostOS] AutopilotOOBE CMD Command Line
-#================================================
-Write-Host -ForegroundColor Green "Create C:\Windows\System32\OOBE.cmd"
-$OOBECMD = @'
+:: Set the PowerShell Execution Policy
 PowerShell -NoL -Com Set-ExecutionPolicy RemoteSigned -Force
-Set Path = %PATH%;C:\Program Files\WindowsPowerShell\Scripts
-Start /Wait PowerShell -NoL -C Install-Module AutopilotOOBE -Force -Verbose
-Start /Wait PowerShell -NoL -C Install-Module OSD -Force -Verbose
-Start /Wait PowerShell -NoL -C Invoke-WebPSScript https://raw.githubusercontent.com/jjblab/OSDCloud/main/OOBE/Set-KeyboardLanguage.ps1
-Start /Wait PowerShell -NoL -C Invoke-WebPSScript https://raw.githubusercontent.com/jjblab/OSDCloud/main/OOBE/Check-AutoPilotPrerequisites.ps1
-Start /Wait PowerShell -NoL -C Start-AutopilotOOBE
-Start /Wait PowerShell -NoL -C Start-OOBEDeploy
-Start /Wait PowerShell -NoL -C Invoke-WebPSScript https://raw.githubusercontent.com/jjblab/OSDCloud/main/OOBE/Check-TPM.ps1
-Start /Wait PowerShell -NoL -C Invoke-WebPSScript https://raw.githubusercontent.com/jjblab/OSDCloud/main/OOBE/Cleanup.ps1
-Start /Wait PowerShell -NoL -C Restart-Computer -Force
+
+:: Add PowerShell Scripts to the Path
+set path=%path%;C:\Program Files\WindowsPowerShell\Scripts
+
+:: Open and Minimize a PowerShell instance just in case
+start PowerShell -NoL -W Mi
+
+:: Install the latest OSD Module
+start "Install-Module OSD" /wait PowerShell -NoL -C Install-Module OSD -Force -Verbose
+
+:: Start-OOBEDeploy
+:: The next line assumes that you have a configuration saved in C:\ProgramData\OSDeploy\OSDeploy.OOBEDeploy.json
+start "Start-OOBEDeploy" PowerShell -NoL -C Start-OOBEDeploy
+
+exit
 '@
-$OOBECMD | Out-File -FilePath 'C:\Windows\System32\OOBE.cmd' -Encoding ascii -Force
+$SetCommand | Out-File -FilePath "C:\Windows\System32\OOBEDeploy.cmd" -Encoding ascii -Force
+#================================================
+#   WinPE PostOS
+#   Set AutopilotOOBE CMD.ps1
+#================================================
+$SetCommand = @'
+@echo off
+
+:: Set the PowerShell Execution Policy
+PowerShell -NoL -Com Set-ExecutionPolicy RemoteSigned -Force
+
+:: Add PowerShell Scripts to the Path
+set path=%path%;C:\Program Files\WindowsPowerShell\Scripts
+
+:: Open and Minimize a PowerShell instance just in case
+start PowerShell -NoL -W Mi
+
+:: Install the latest AutopilotOOBE Module
+start "Install-Module AutopilotOOBE" /wait PowerShell -NoL -C Install-Module AutopilotOOBE -Force -Verbose
+
+:: Start-AutopilotOOBE
+:: The next line assumes that you have a configuration saved in C:\ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json
+start "Start-AutopilotOOBE" PowerShell -NoL -C Start-AutopilotOOBE
+
+exit
+'@
+$SetCommand | Out-File -FilePath "C:\Windows\System32\Autopilot.cmd" -Encoding ascii -Force
 
 #================================================
-#  [PostOS] SetupComplete CMD Command Line
+#   PostOS
+#   Shutdown-Computer & Display Message
 #================================================
-Write-Host -ForegroundColor Green "Create C:\Windows\Setup\Scripts\SetupComplete.cmd"
-$SetupCompleteCMD = @'
-powershell.exe -Command Set-ExecutionPolicy RemoteSigned -Force
-powershell.exe -Command "& {IEX (IRM https://raw.githubusercontent.com/jjblab/OSDCloud/main/OOBE/OOBETasks.ps1)}"
-'@
-$SetupCompleteCMD | Out-File -FilePath 'C:\Windows\Setup\Scripts\SetupComplete.cmd' -Encoding ascii -Force
+# Display a banner of asterisks for emphasis
+Write-Host -ForegroundColor Yellow "*************************************************************************"
 
-#=======================================================================
-#   Restart-Computer
-#=======================================================================
-Write-Host  -ForegroundColor Green "Restarting in 20 seconds!"
-Start-Sleep -Seconds 20
-wpeutil reboot
+# Display the word "IMPORTANT!" in red and enlarged text
+Write-Host -ForegroundColor Red "`n`n`n                  IMPORTANT! IMPORTANT! IMPORTANT!`n`n`n"
+
+# Display another banner of asterisks for emphasis
+Write-Host -ForegroundColor Yellow "*************************************************************************"
+
+# Display the instructions in Cyan for better readability
+Write-Host -ForegroundColor Cyan -NoNewline "INSTRUCTIONS: "
+Write-Host -ForegroundColor White "Ensure to run the C:\Windows\System32\OOBEDeploy.cmd to complete the Autopilot readiness build. The device will now shut down."
+
+# Prompt the user to press the ENTER key to continue
+Write-Host -ForegroundColor Green "Press the ENTER key to continue...."
+$null = Read-Host
+Wpeutil Shutdown
