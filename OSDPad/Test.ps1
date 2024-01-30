@@ -22,7 +22,7 @@ Install-Module AutopilotOOBE -Force -Verbose
 #   [PreOS] AutopilotOOBE Configuration
 #================================================
 
-Write-Host -ForegroundColor Green "Create C:\ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json"
+Write-Host -ForegroundColor Green "Create X:\ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json"
 $AutopilotOOBEJson = @'
 {
 	"Assign": {
@@ -56,7 +56,7 @@ $AutopilotOOBEJson = @'
 If (!(Test-Path "C:\ProgramData\OSDeploy")) {
     New-Item "C:\ProgramData\OSDeploy" -ItemType Directory -Force | Out-Null
 }
-$AutopilotOOBEJson | Out-File -FilePath "C:\ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json" -Encoding ascii -Force
+$AutopilotOOBEJson | Out-File -FilePath "X:\ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json" -Encoding ascii -Force
 
 Start-AutopilotOOBE
 
