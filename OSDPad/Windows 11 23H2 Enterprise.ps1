@@ -1,4 +1,3 @@
-Write-Host  -ForegroundColor Cyan 'Windows Installation'
 #================================================
 #   [PreOS] Update Module
 #================================================
@@ -8,15 +7,24 @@ if ((Get-MyComputerModel) -match 'Virtual') {
 }
 
 Write-Host -ForegroundColor Green "Updating OSD PowerShell Module"
-Install-Module OSD -Force
+Install-Module OSD -Force -SkipPublisherCheck
 
 Write-Host  -ForegroundColor Green "Importing OSD PowerShell Module"
 Import-Module OSD -Force   
 
 #=======================================================================
-#   [OS] Start-OSDCloudGUI
+#   [OS] Params and Start-OSDCloud
 #=======================================================================
-Start-OSDCloudGUI
+$Params = @{
+    OSVersion = "Windows 11"
+    OSBuild = "23H2"
+    OSEdition = "Enterprise"
+    OSLanguage = "en-us"
+    OSLicense = "Volume"
+    ZTI = $true
+    Firmware = $false
+}
+Start-OSDCloud @Params
 
 #================================================
 #  [PostOS] OOBEDeploy Configuration
@@ -27,34 +35,34 @@ $OOBEDeployJson = @'
     "Autopilot":  {
                       "IsPresent":  false
                   },
-    "AddNetFX3":  {
-                      "IsPresent":  true
-                    },                     
     "RemoveAppx":  [
-                       "Microsoft.549981C3F5F10",
-                        "Microsoft.BingWeather",
-                        "Microsoft.GetHelp",
-                        "Microsoft.Getstarted",
-                        "Microsoft.Microsoft3DViewer",
-                        "Microsoft.MicrosoftOfficeHub",
-                        "Microsoft.MicrosoftSolitaireCollection",
-                        "Microsoft.MixedReality.Portal",
-                        "Microsoft.People",
-                        "Microsoft.SkypeApp",
-                        "Microsoft.Wallet",
-                        "Microsoft.WindowsCamera",
-                        "microsoft.windowscommunicationsapps",
-                        "Microsoft.WindowsFeedbackHub",
-                        "Microsoft.WindowsMaps",
-                        "Microsoft.Xbox.TCUI",
-                        "Microsoft.XboxApp",
-                        "Microsoft.XboxGameOverlay",
-                        "Microsoft.XboxGamingOverlay",
-                        "Microsoft.XboxIdentityProvider",
-                        "Microsoft.XboxSpeechToTextOverlay",
-                        "Microsoft.YourPhone",
-                        "Microsoft.ZuneMusic",
-                        "Microsoft.ZuneVideo"
+                    "MicrosoftTeams",
+                    "Microsoft.BingWeather",
+                    "Microsoft.BingNews",
+                    "Microsoft.GamingApp",
+                    "Microsoft.GetHelp",
+                    "Microsoft.Getstarted",
+                    "Microsoft.Messaging",
+                    "Microsoft.MicrosoftOfficeHub",
+                    "Microsoft.MicrosoftSolitaireCollection",
+                    "Microsoft.MicrosoftStickyNotes",
+                    "Microsoft.MSPaint",
+                    "Microsoft.People",
+                    "Microsoft.PowerAutomateDesktop",
+                    "Microsoft.StorePurchaseApp",
+                    "Microsoft.Todos",
+                    "microsoft.windowscommunicationsapps",
+                    "Microsoft.WindowsFeedbackHub",
+                    "Microsoft.WindowsMaps",
+                    "Microsoft.WindowsSoundRecorder",
+                    "Microsoft.Xbox.TCUI",
+                    "Microsoft.XboxGameOverlay",
+                    "Microsoft.XboxGamingOverlay",
+                    "Microsoft.XboxIdentityProvider",
+                    "Microsoft.XboxSpeechToTextOverlay",
+                    "Microsoft.YourPhone",
+                    "Microsoft.ZuneMusic",
+                    "Microsoft.ZuneVideo"
                    ],
     "UpdateDrivers":  {
                           "IsPresent":  true
@@ -72,6 +80,7 @@ $OOBEDeployJson | Out-File -FilePath "C:\ProgramData\OSDeploy\OSDeploy.OOBEDeplo
 #================================================
 #  [PostOS] AutopilotOOBE Configuration Staging
 #================================================
+
 Write-Host -ForegroundColor Green "Create C:\ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json"
 $AutopilotOOBEJson = @'
 {
@@ -97,7 +106,7 @@ $AutopilotOOBEJson = @'
 		"AddToGroup"
 	],
 	"PostAction": "Quit",
-	"Run": "NetworkingWireless",
+	"Run": "Powershell",
 	"Docs": "https://google.com/",
 	"Title": "Intune Autopilot Registration"
 }
@@ -114,17 +123,20 @@ Write-Host -ForegroundColor Green "Create C:\Windows\System32\OOBE.cmd"
 $OOBECMD = @'
 PowerShell -NoL -Com Set-ExecutionPolicy RemoteSigned -Force
 Set Path = %PATH%;C:\Program Files\WindowsPowerShell\Scripts
-Start /Wait PowerShell -NoL -C Install-Module AutopilotOOBE -Force -Verbose
 Start /Wait PowerShell -NoL -C Install-Module OSD -Force -Verbose
-Start /Wait PowerShell -NoL -C Invoke-WebPSScript https://raw.githubusercontent.com/jjblab/OSDPad/main/OOBE/Set-KeyboardLanguage.ps1
-Start /Wait PowerShell -NoL -C Invoke-WebPSScript https://raw.githubusercontent.com/jjblab/OSDPad/main/OOBE/Check-AutoPilotPrerequisites.ps1
-Start /Wait PowerShell -NoL -C Start-AutopilotOOBE
 Start /Wait PowerShell -NoL -C Start-OOBEDeploy
-Start /Wait PowerShell -NoL -C Invoke-WebPSScript https://raw.githubusercontent.com/jjblab/OSDPad/main/OOBE/Check-TPM.ps1
-Start /Wait PowerShell -NoL -C Invoke-WebPSScript https://raw.githubusercontent.com/jjblab/OSDPad/main/OOBE/Cleanup.ps1
 Start /Wait PowerShell -NoL -C Restart-Computer -Force
 '@
 $OOBECMD | Out-File -FilePath 'C:\Windows\System32\OOBE.cmd' -Encoding ascii -Force
+
+Write-Host -ForegroundColor Green "Create C:\Windows\System32\AP.cmd"
+$AutopilotCMD = @'
+PowerShell -NoL -Com Set-ExecutionPolicy RemoteSigned -Force
+Set Path = %PATH%;C:\Program Files\WindowsPowerShell\Scripts
+Start /Wait PowerShell -NoL -C Install-Module AutopilotOOBE -Force -Verbose
+Start /Wait PowerShell -NoL -C AutopilotOOBE
+'@
+$AutopilotCMD | Out-File -FilePath 'C:\Windows\System32\AP.cmd' -Encoding ascii -Force
 
 #================================================
 #  [PostOS] SetupComplete CMD Command Line
