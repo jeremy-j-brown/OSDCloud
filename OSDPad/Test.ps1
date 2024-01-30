@@ -28,7 +28,7 @@ $OOBEDeployJson = @'
                       "IsPresent":  false
                   },
     "AddNetFX3":  {
-                      "IsPresent":  true
+                      "IsPresent":  false
                     },                     
     "RemoveAppx":  [
                        "Microsoft.549981C3F5F10",
@@ -57,7 +57,7 @@ $OOBEDeployJson = @'
                         "Microsoft.ZuneVideo"
                    ],
     "UpdateDrivers":  {
-                          "IsPresent":  true
+                          "IsPresent":  false
                       },
     "UpdateWindows":  {
                           "IsPresent":  true
