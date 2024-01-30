@@ -58,7 +58,7 @@ If (!(Test-Path "C:\ProgramData\OSDeploy")) {
 }
 $AutopilotOOBEJson | Out-File -FilePath "X:\ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json" -Encoding ascii -Force
 
-Start-AutopilotOOBE
+Start-AutopilotOOBE -CustomProfile "X:\ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json"
 
 #=======================================================================
 #   [OS] Start-OSDCloudGUI
