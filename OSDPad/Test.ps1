@@ -1,5 +1,5 @@
 #================================================
-#   [PreOS] Update Module
+#   [PreOS] Update Modules
 #================================================
 if ((Get-MyComputerModel) -match 'Virtual') {
     Write-Host  -ForegroundColor Green "Setting Display Resolution to 1600x"
@@ -10,11 +10,61 @@ Write-Host -ForegroundColor Green "Updating OSD PowerShell Module"
 Install-Module OSD -Force
 
 Write-Host  -ForegroundColor Green "Importing OSD PowerShell Module"
-Import-Module OSD -Force   
+Import-Module OSD -Force  
 
+Write-Host -ForegroundColor Green "Installing AutopilotOOBE PowerShell Module"
+Install-Module AutopilotOOBE -Force
+
+Write-Host -ForegroundColor Green "Importing AutopilotOOBE PowerShell Module"
+Install-Module AutopilotOOBE -Force
+
+#================================================
+#   [PreOS] AutopilotOOBE Configuration
+#================================================
+
+Write-Host -ForegroundColor Green "Create C:\ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json"
+$AutopilotOOBEJson = @'
+{
+	"Assign": {
+		"IsPresent": true
+	},
+	"GroupTag":  "PHL-IA",
+    "GroupTagOptions":  [
+                            "BOS-A",
+                            "BOS-IA",
+                            "BOS-IS",
+                            "BOS-S",
+                            "PHL-A",
+                            "PHL-IA",
+                            "PHL-IS",
+                            "PHL-S"
+                        ],
+	"Hidden": [
+		"AssignedComputerName",
+		"AssignedUser",
+		"PostAction",
+		"Assign",
+		"AddToGroup"
+	],
+	"PostAction": "Quit",
+	"Run": "NetworkingWireless",
+	"Docs": "https://google.com/",
+	"Title": "Intune Autopilot Registration"
+}
+'@
+
+If (!(Test-Path "C:\ProgramData\OSDeploy")) {
+    New-Item "C:\ProgramData\OSDeploy" -ItemType Directory -Force | Out-Null
+}
+$AutopilotOOBEJson | Out-File -FilePath "C:\ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json" -Encoding ascii -Force
+
+Start-AutopilotOOBE
+
+#=======================================================================
+#   [OS] Start-OSDCloudGUI
+#=======================================================================
 
 Start-OSDCloudGUI
-
 
 #================================================
 #  [PostOS] OOBEDeploy Configuration
@@ -71,66 +121,27 @@ If (!(Test-Path "C:\ProgramData\OSDeploy")) {
 $OOBEDeployJson | Out-File -FilePath "C:\ProgramData\OSDeploy\OSDeploy.OOBEDeploy.json" -Encoding ascii -Force
 
 #================================================
-#  [PostOS] AutopilotOOBE Configuration Staging
-#================================================
-Write-Host -ForegroundColor Green "Define Computername:"
-$Serial = Get-WmiObject Win32_bios | Select-Object -ExpandProperty SerialNumber
-$TargetComputername = $Serial.Substring(4,3)
-
-$AssignedComputerName = "AkosCloud-$TargetComputername"
-Write-Host -ForegroundColor Red $AssignedComputerName
-Write-Host ""
-
-Write-Host -ForegroundColor Green "Create C:\ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json"
-$AutopilotOOBEJson = @'
-{
-	"Assign": {
-		"IsPresent": true
-	},
-	"GroupTag":  "PHL-IA",
-    "GroupTagOptions":  [
-                            "BOS-A",
-                            "BOS-IA",
-                            "BOS-IS",
-                            "BOS-S",
-                            "PHL-A",
-                            "PHL-IA",
-                            "PHL-IS",
-                            "PHL-S"
-                        ],
-	"Hidden": [
-		"AssignedComputerName",
-		"AssignedUser",
-		"PostAction",
-		"Assign",
-		"AddToGroup"
-	],
-	"PostAction": "Quit",
-	"Run": "NetworkingWireless",
-	"Docs": "https://google.com/",
-	"Title": "Intune Autopilot Registration"
-}
-'@
-
-If (!(Test-Path "C:\ProgramData\OSDeploy")) {
-    New-Item "C:\ProgramData\OSDeploy" -ItemType Directory -Force | Out-Null
-}
-$AutopilotOOBEJson | Out-File -FilePath "C:\ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json" -Encoding ascii -Force
-
-#================================================
-#  [PostOS] AutopilotOOBE CMD Command Line
+#  [PostOS] OOBE CMD Command Line
 #================================================
 Write-Host -ForegroundColor Green "Create C:\Windows\System32\OOBE.cmd"
 $OOBECMD = @'
 PowerShell -NoL -Com Set-ExecutionPolicy RemoteSigned -Force
 Set Path = %PATH%;C:\Program Files\WindowsPowerShell\Scripts
-Start /Wait PowerShell -NoL -C Install-Module AutopilotOOBE -Force -Verbose
 Start /Wait PowerShell -NoL -C Install-Module OSD -Force -Verbose
-Start /Wait PowerShell -NoL -C Start-AutopilotOOBE
 Start /Wait PowerShell -NoL -C Start-OOBEDeploy
 Start /Wait PowerShell -NoL -C Restart-Computer -Force
 '@
 $OOBECMD | Out-File -FilePath 'C:\Windows\System32\OOBE.cmd' -Encoding ascii -Force
+
+#================================================
+#  [PostOS] SetupComplete CMD Command Line
+#================================================
+Write-Host -ForegroundColor Green "Create C:\Windows\Setup\Scripts\SetupComplete.cmd"
+$SetupCompleteCMD = @'
+powershell.exe -Command Set-ExecutionPolicy RemoteSigned -Force
+powershell.exe -Command "& {IEX (IRM raw.githubusercontent.com/jjblab/OSDPad/main/OOBE/OOBETasks.ps1)}"
+'@
+$SetupCompleteCMD | Out-File -FilePath 'C:\Windows\Setup\Scripts\SetupComplete.cmd' -Encoding ascii -Force
 
 #=======================================================================
 #   Restart-Computer
