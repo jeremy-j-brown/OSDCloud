@@ -128,10 +128,10 @@ function New-CleanupCommand {
 switch ($input) {
     '1' { Start-OSDCloud -OSLanguage en-us -OSVersion 'Windows 10' -OSBuild 22H2 -OSEdition Enterprise -OSLicense = "Volume" -ZTI } 
     '2' { Start-OSDCloud -OSLanguage en-us -OSVersion 'Windows 11' -OSBuild 23H2 -OSEdition Enterprise -OSLicense = "Volume" -ZTI } 
-    '3' { Start-OSDCloud -ImageFileUrl https://osd.bos.server.org/Windows10.esd -ImageIndex 1 -ZTI } 
-    '4' { Start-OSDCloud -ImageFileUrl https://osd.bos.server.org/Windows11.esd -ImageIndex 1 -ZTI }
-    '5' { Start-OSDCloud -ImageFileUrl https://osd.phl.server.org/Windows10.esd -ImageIndex 1 -ZTI } 
-    '6' { Start-OSDCloud -ImageFileUrl https://osd.phl.server.org/Windows11.esd -ImageIndex 1 -ZTI }
+    '3' { Start-OSDCloud -ImageFileUrl https://osd.bos.server.org/Windows10.esd -ImageIndex 6 -ZTI } 
+    '4' { Start-OSDCloud -ImageFileUrl https://osd.bos.server.org/Windows11.esd -ImageIndex 6 -ZTI }
+    '5' { Start-OSDCloud -ImageFileUrl https://osd.phl.server.org/Windows10.esd -ImageIndex 6 -ZTI } 
+    '6' { Start-OSDCloud -ImageFileUrl https://osd.phl.server.org/Windows11.esd -ImageIndex 6 -ZTI }
     '7' { Start-OSDCloudGUI }
     '8' { Start-OSDCloudGUI }  
 }
