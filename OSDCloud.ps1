@@ -125,25 +125,24 @@ function New-CleanupCommand {
     $SetupCompleteCMD | Out-File -FilePath 'C:\Windows\Setup\Scripts\SetupComplete.cmd' -Encoding ascii -Force
 }
 
-switch ($input) {
-    '1' { Start-OSDCloud -OSLanguage en-us -OSVersion 'Windows 10' -OSBuild 22H2 -OSEdition Enterprise -OSLicense = "Volume" -ZTI } 
-    '2' { Start-OSDCloud -OSLanguage en-us -OSVersion 'Windows 11' -OSBuild 23H2 -OSEdition Enterprise -OSLicense = "Volume" -ZTI } 
+switch ($UserInput) {
+    '1' { Start-OSDCloud -OSLanguage en-us -OSVersion 'Windows 10' -OSBuild 22H2 -OSEdition Enterprise -OSLicense Volume -ZTI } 
+    '2' { Start-OSDCloud -OSLanguage en-us -OSVersion 'Windows 11' -OSBuild 23H2 -OSEdition Enterprise -OSLicense Volume -ZTI } 
     '3' { Start-OSDCloud -ImageFileUrl https://osd.bos.server.org/Windows10.esd -ImageIndex 6 -ZTI } 
     '4' { Start-OSDCloud -ImageFileUrl https://osd.bos.server.org/Windows11.esd -ImageIndex 6 -ZTI }
     '5' { Start-OSDCloud -ImageFileUrl https://osd.phl.server.org/Windows10.esd -ImageIndex 6 -ZTI } 
     '6' { Start-OSDCloud -ImageFileUrl https://osd.phl.server.org/Windows11.esd -ImageIndex 6 -ZTI }
-    '7' { Start-OSDCloudGUI }
+    '7' { Start-OSDCloudGUI }  
     '8' { Start-OSDCloudGUI }  
 }
 
-# If input is equal to 1-7, then create OOBEDeploy.json and AutopilotOOBE.json
-if ($input -eq '1' -or $input -eq '2' -or $input -eq '3' -or $input -eq '4' -or $input -eq '5' -or $input -eq '6' -or $input -eq '7') {
+if ($UserInput -ge 1 -and $UserInput -le 7) {
     New-OOBEConfig
     New-AutopilotConfig
     New-OOBECommand
     New-CleanupCommand
 }
-elseif ($input -eq '8') {
+elseif ($UserInput -eq 8) {
     New-OOBEConfig
     New-OOBECommandNoAutopilot
     New-CleanupCommand
