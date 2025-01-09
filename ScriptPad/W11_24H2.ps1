@@ -97,8 +97,8 @@ $AutopilotOOBEJson = @"
     "Assign":  {
                    "IsPresent":  true
                },
-    "GroupTag":  "PHL-IA",
-    "GroupTagOptions":  ["BOS-A","BOS-IA","BOS-IS","BOS-S","PHL-A","PHL-IA","PHL-IS","PHL-S"],
+    "GroupTag":  "BOS",
+    "GroupTagOptions":  ["BOS","BOS-A","BOS-I","PHL","PHL-A","PHL-I"],
     "Hidden":  ["AssignedComputerName","AssignedUser","PostAction","Assign","AddToGroup"],
     "PostAction":  "Quit",
     "Run":  "NetworkingWireless",
